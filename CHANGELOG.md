@@ -4,6 +4,18 @@ All notable changes to `@cross-deck/cli` will be documented here. The
 format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/)
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.1] — 2026-05-13
+
+### Fixed
+
+- Trailing-slash normalisation no longer corrupts Sentry sentinel
+  schemes. Before: `--url-prefix app:///` produced `app:/file.js` on
+  the wire because the naive `replace(/\/+$/, "")` ate the empty-host
+  slashes. Now it preserves `scheme://[host]/` and only collapses
+  extras on the path part — `app:///` stays `app:///`, `https://x.com/a//`
+  becomes `https://x.com/a/`. Covered by 8 new test cases in
+  `normaliseUrlPrefix`.
+
 ## [1.1.0] — 2026-05-13
 
 Dogfood-driven polish from installing the CLI against a real Crossdeck

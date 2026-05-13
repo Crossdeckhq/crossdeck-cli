@@ -8,7 +8,34 @@ import { mkdtempSync, mkdirSync, writeFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
-import { discoverSourcemaps } from "../../src/discover.js";
+import { discoverSourcemaps, normaliseUrlPrefix } from "../../src/discover.js";
+
+describe("normaliseUrlPrefix", () => {
+  it("preserves app:/// sentinel exactly", () => {
+    expect(normaliseUrlPrefix("app:///")).toBe("app:///");
+  });
+  it("preserves app:/// with a nested path", () => {
+    expect(normaliseUrlPrefix("app:///nested/")).toBe("app:///nested/");
+  });
+  it("collapses extra trailing slashes on the path part", () => {
+    expect(normaliseUrlPrefix("app:///nested/////")).toBe("app:///nested/");
+  });
+  it("preserves webpack:// sentinel", () => {
+    expect(normaliseUrlPrefix("webpack:///")).toBe("webpack:///");
+  });
+  it("preserves capacitor://localhost", () => {
+    expect(normaliseUrlPrefix("capacitor://localhost/")).toBe("capacitor://localhost/");
+  });
+  it("adds trailing slash when missing", () => {
+    expect(normaliseUrlPrefix("https://example.com")).toBe("https://example.com/");
+  });
+  it("collapses double trailing slashes on browser URL path", () => {
+    expect(normaliseUrlPrefix("https://example.com/static//")).toBe("https://example.com/static/");
+  });
+  it("preserves single trailing slash on browser URL", () => {
+    expect(normaliseUrlPrefix("https://example.com/static/")).toBe("https://example.com/static/");
+  });
+});
 
 function makeDist(): string {
   return mkdtempSync(join(tmpdir(), "crossdeck-cli-test-"));

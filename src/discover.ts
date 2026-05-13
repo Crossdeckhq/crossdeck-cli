@@ -54,9 +54,32 @@ export interface DiscoveryResult {
   skipped: DiscoveryDiagnostic[];
 }
 
+/**
+ * Trailing-slash normalisation that preserves Sentry sentinel schemes.
+ *
+ * Naive `replace(/\/+$/, "") + "/"` corrupts `app:///` into `app:/`
+ * because the regex eats the empty-host slashes after the scheme.
+ * Preserve the scheme://host shape and only collapse trailing slashes
+ * on the path part.
+ *
+ *   app:///                  →  app:///
+ *   app:///nested/           →  app:///nested/
+ *   app:///nested/////       →  app:///nested/
+ *   https://x.com/a//        →  https://x.com/a/
+ *   https://x.com            →  https://x.com/
+ */
+export function normaliseUrlPrefix(raw: string): string {
+  const m = /^([a-z][a-z0-9+.-]*:\/\/[^/]*)(\/.*)?$/i.exec(raw);
+  if (!m) return raw.replace(/\/+$/, "") + "/";
+  const origin = m[1]!;          // "https://example.com" or "app://" (no host)
+  const path = m[2] ?? "/";       // "/static/" or undefined → "/"
+  const collapsedPath = path.replace(/\/+$/, "") + "/";
+  return origin + collapsedPath;
+}
+
 export function discoverSourcemaps(opts: DiscoverOptions): DiscoveryResult {
   const distDir = resolvePath(opts.distDir);
-  const urlPrefix = opts.urlPrefix.replace(/\/+$/, "") + "/";
+  const urlPrefix = normaliseUrlPrefix(opts.urlPrefix);
   const collect = opts.collectDiagnostics !== false;
 
   const files: DiscoveredFile[] = [];
