@@ -4,8 +4,9 @@
  * Resolution order (highest priority first):
  *
  *   authToken:
- *     1. --auth-token <key>            (explicit flag)
- *     2. CROSSDECK_AUTH_TOKEN env var  (CI/CD pattern — set once, all commands inherit)
+ *     1. --auth-token <key>             (explicit flag)
+ *     2. CROSSDECK_SECRET_KEY env var   (canonical — matches the SDKs)
+ *     3. CROSSDECK_AUTH_TOKEN env var   (back-compat alias for v1.0.x)
  *
  *   projectId:
  *     1. --project <id>
@@ -36,12 +37,17 @@ const DEFAULT_BASE_URL = "https://api.cross-deck.com";
 
 export function resolveConfig(opts: ResolveOpts): CliConfig {
   // ── authToken ─────────────────────────────────────────────────────
+  // CROSSDECK_SECRET_KEY is the canonical env var (matches every SDK
+  // we publish). CROSSDECK_AUTH_TOKEN is honoured as a back-compat
+  // alias for users who set it during the v1.0.x window when the CLI
+  // used that name.
   const authToken =
     (opts.authToken && opts.authToken.trim()) ||
+    (process.env.CROSSDECK_SECRET_KEY && process.env.CROSSDECK_SECRET_KEY.trim()) ||
     (process.env.CROSSDECK_AUTH_TOKEN && process.env.CROSSDECK_AUTH_TOKEN.trim());
   if (!authToken) {
     throw new CliError(
-      "No Crossdeck secret key found. Set CROSSDECK_AUTH_TOKEN or pass --auth-token.\n" +
+      "No Crossdeck secret key found. Set CROSSDECK_SECRET_KEY or pass --auth-token.\n" +
         "Get one at https://cross-deck.com/dashboard/developers/api-keys/",
     );
   }

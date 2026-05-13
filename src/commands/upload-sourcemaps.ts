@@ -63,13 +63,21 @@ export async function uploadSourcemapsCommand(
   const urlPrefix = opts.urlPrefix?.trim();
   if (!urlPrefix) {
     printError("--url-prefix is required.");
-    printHint(
-      "  Example: --url-prefix https://app.example.com/static/js/",
-    );
+    printHint("  Browser apps:        --url-prefix https://app.example.com/static/js/");
+    printHint("  Server-side / Node:  --url-prefix app:///");
     return 2;
   }
-  if (!/^https?:\/\//.test(urlPrefix)) {
-    printError("--url-prefix must be an http(s) URL.");
+  // Accept any scheme that maps to a stack-trace URL pattern.
+  //   http(s)://...     — browser bundles served from a CDN/origin
+  //   app:///...        — server-side / native Node (Sentry sentinel)
+  //   webpack://...     — frames emitted by webpack inside workers
+  //   cdn://, capacitor://, ionic://, react-native://, etc.
+  // Sentry-compatible: any scheme followed by :// is permitted.
+  if (!/^[a-z][a-z0-9+.-]*:\/\//i.test(urlPrefix)) {
+    printError("--url-prefix must be a URL with an explicit scheme.");
+    printHint("  Browser:      https://app.example.com/static/js/");
+    printHint("  Server-side:  app:///         (Node / Lambda / Cloud Functions)");
+    printHint("  Native:       capacitor://localhost/  or  react-native://0.0.0.0/");
     return 2;
   }
 
@@ -129,8 +137,16 @@ export async function uploadSourcemapsCommand(
       printInfo(`(${skipped.length} files skipped — pass --verbose to see why.)`);
     }
     printInfo(
-      "\nDid you point at the right directory? Vite uses ./dist, Webpack/Next.js often use ./build.\n" +
-        "Did your bundler emit sourcemaps? Vite/Rollup: `sourcemap: true`. Webpack: `devtool: 'source-map'`. ESBuild: `sourcemap: true`.",
+      "\nDid you point at the right directory?\n" +
+        "  Vite / Rollup:     ./dist\n" +
+        "  Webpack / Next.js: ./build  (or .next/static/ for Next.js)\n" +
+        "  TypeScript (tsc):  ./lib    (or your tsconfig outDir)\n" +
+        "  ESBuild:           wherever your bundle is written\n\n" +
+        "Did your build emit sourcemaps WITH inline source content?\n" +
+        "  TypeScript (tsc):  tsconfig.json → \"sourceMap\": true, \"inlineSources\": true\n" +
+        "  Vite / Rollup:     build.sourcemap: true  (sourcesContent inlined by default)\n" +
+        "  Webpack:           devtool: 'source-map'\n" +
+        "  ESBuild:           sourcemap: true, sourcesContent: true",
     );
     return 0;
   }

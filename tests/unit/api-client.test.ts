@@ -98,7 +98,8 @@ describe("uploadSourcemaps", () => {
     expect(fetchMock).toHaveBeenCalledTimes(1);
     expect(summary.uploaded).toBe(1);
 
-    const [url, init] = fetchMock.mock.calls[0] as [string, RequestInit];
+    const firstCall = fetchMock.mock.calls[0] as unknown as [string, RequestInit];
+    const [url, init] = firstCall;
     expect(url).toBe("https://api.example.com/v1/releases/sourcemaps");
     expect(init.method).toBe("POST");
     const headers = init.headers as Record<string, string>;
@@ -131,8 +132,8 @@ describe("uploadSourcemaps", () => {
 
     // 243 / 100 = 3 batches (100, 100, 43)
     expect(fetchMock).toHaveBeenCalledTimes(3);
-    const bodies = fetchMock.mock.calls.map(
-      (c) => JSON.parse((c[1] as RequestInit).body as string),
+    const bodies = (fetchMock.mock.calls as unknown as Array<[string, RequestInit]>).map(
+      (c) => JSON.parse(c[1].body as string),
     );
     expect(bodies[0].files).toHaveLength(100);
     expect(bodies[1].files).toHaveLength(100);

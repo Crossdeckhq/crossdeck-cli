@@ -9,6 +9,7 @@ import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { CliError, resolveConfig } from "../../src/config.js";
 
 const ENV_KEYS = [
+  "CROSSDECK_SECRET_KEY",
   "CROSSDECK_AUTH_TOKEN",
   "CROSSDECK_PROJECT_ID",
   "CROSSDECK_BASE_URL",
@@ -38,14 +39,27 @@ describe("resolveConfig", () => {
     expect(cfg.projectId).toBeUndefined();
   });
 
-  it("reads authToken from CROSSDECK_AUTH_TOKEN env var when no flag", () => {
-    process.env.CROSSDECK_AUTH_TOKEN = "cd_sk_test_xyz789";
+  it("reads authToken from CROSSDECK_SECRET_KEY env var when no flag", () => {
+    process.env.CROSSDECK_SECRET_KEY = "cd_sk_test_xyz789";
     const cfg = resolveConfig({});
     expect(cfg.authToken).toBe("cd_sk_test_xyz789");
   });
 
+  it("reads authToken from CROSSDECK_AUTH_TOKEN env var (back-compat alias)", () => {
+    process.env.CROSSDECK_AUTH_TOKEN = "cd_sk_test_legacy";
+    const cfg = resolveConfig({});
+    expect(cfg.authToken).toBe("cd_sk_test_legacy");
+  });
+
+  it("CROSSDECK_SECRET_KEY wins over CROSSDECK_AUTH_TOKEN when both are set", () => {
+    process.env.CROSSDECK_SECRET_KEY = "cd_sk_live_canonical";
+    process.env.CROSSDECK_AUTH_TOKEN = "cd_sk_live_legacy";
+    const cfg = resolveConfig({});
+    expect(cfg.authToken).toBe("cd_sk_live_canonical");
+  });
+
   it("flag overrides env var", () => {
-    process.env.CROSSDECK_AUTH_TOKEN = "cd_sk_live_env";
+    process.env.CROSSDECK_SECRET_KEY = "cd_sk_live_env";
     const cfg = resolveConfig({ authToken: "cd_sk_live_flag" });
     expect(cfg.authToken).toBe("cd_sk_live_flag");
   });
@@ -55,7 +69,7 @@ describe("resolveConfig", () => {
     try {
       resolveConfig({});
     } catch (err) {
-      expect((err as Error).message).toMatch(/CROSSDECK_AUTH_TOKEN/);
+      expect((err as Error).message).toMatch(/CROSSDECK_SECRET_KEY/);
       expect((err as Error).message).toMatch(/api-keys/);
     }
   });

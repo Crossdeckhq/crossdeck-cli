@@ -15,9 +15,10 @@
 
 import { Command } from "commander";
 
+import { doctorCommand } from "./commands/doctor.js";
 import { uploadSourcemapsCommand } from "./commands/upload-sourcemaps.js";
 
-const VERSION = "1.0.0";
+const VERSION = "1.1.0";
 
 const program = new Command();
 
@@ -40,7 +41,7 @@ program
   )
   .requiredOption(
     "-u, --url-prefix <url>",
-    "URL prefix where the bundles are served from (e.g. https://app.example.com/static/js/)",
+    "Where the bundles are served from. Browser: https://app.example.com/static/js/. Server-side / Node: app:///. Sentry-style sentinel schemes (app://, webpack://, capacitor://) are accepted.",
   )
   .option(
     "-e, --environment <env>",
@@ -49,7 +50,7 @@ program
   )
   .option(
     "-t, --auth-token <token>",
-    "Crossdeck secret key (cd_sk_test_… or cd_sk_live_…). Defaults to $CROSSDECK_AUTH_TOKEN.",
+    "Crossdeck secret key (cd_sk_test_… or cd_sk_live_…). Defaults to $CROSSDECK_SECRET_KEY (canonical) or $CROSSDECK_AUTH_TOKEN (back-compat).",
   )
   .option(
     "-p, --project <id>",
@@ -62,6 +63,28 @@ program
   .option("-v, --verbose", "Print every discovered file + skipped reason", false)
   .action(async (distDir: string, opts) => {
     const exitCode = await uploadSourcemapsCommand(distDir, opts);
+    process.exit(exitCode);
+  });
+
+program
+  .command("doctor")
+  .description(
+    "Validate your CLI setup — checks auth token, environment, and API reachability without uploading anything.",
+  )
+  .option(
+    "-t, --auth-token <token>",
+    "Crossdeck secret key. Defaults to $CROSSDECK_SECRET_KEY (canonical) or $CROSSDECK_AUTH_TOKEN (back-compat).",
+  )
+  .option(
+    "-p, --project <id>",
+    "Crossdeck project ID. Defaults to $CROSSDECK_PROJECT_ID.",
+  )
+  .option(
+    "--base-url <url>",
+    "Crossdeck API base URL. Defaults to https://api.cross-deck.com.",
+  )
+  .action(async (opts) => {
+    const exitCode = await doctorCommand(opts);
     process.exit(exitCode);
   });
 
