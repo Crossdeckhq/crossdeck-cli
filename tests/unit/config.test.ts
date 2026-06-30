@@ -70,7 +70,7 @@ describe("resolveConfig", () => {
       resolveConfig({});
     } catch (err) {
       expect((err as Error).message).toMatch(/CROSSDECK_SECRET_KEY/);
-      expect((err as Error).message).toMatch(/api-keys/);
+      expect((err as Error).message).toMatch(/developers\/api/);
     }
   });
 
