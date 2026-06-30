@@ -18,7 +18,7 @@ import { Command } from "commander";
 import { doctorCommand } from "./commands/doctor.js";
 import { uploadSourcemapsCommand } from "./commands/upload-sourcemaps.js";
 
-const VERSION = "1.1.1";
+const VERSION = "1.1.2";
 
 const program = new Command();
 
