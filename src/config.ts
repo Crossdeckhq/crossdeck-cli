@@ -48,7 +48,7 @@ export function resolveConfig(opts: ResolveOpts): CliConfig {
   if (!authToken) {
     throw new CliError(
       "No Crossdeck secret key found. Set CROSSDECK_SECRET_KEY or pass --auth-token.\n" +
-        "Get one at https://cross-deck.com/dashboard/developers/api-keys/",
+        "Get one at https://cross-deck.com/dashboard/developers/api/",
     );
   }
   if (!/^cd_sk_(?:test|live)_/.test(authToken)) {

@@ -4,6 +4,15 @@ All notable changes to `@cross-deck/cli` will be documented here. The
 format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/)
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.2] — 2026-06-30
+
+### Docs
+
+- Knowledge-backbone governance release. No runtime behavior change. This patch
+  republishes the CLI with the Markdoc-backed README/version-control surface so
+  npm, the public GitHub mirror, and the Crossdeck knowledge backbone all carry
+  the same governed installation documentation.
+
 ## [1.1.1] — 2026-05-13
 
 ### Fixed

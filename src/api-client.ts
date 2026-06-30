@@ -128,7 +128,7 @@ async function postJson<T>(
     headers: {
       Authorization: `Bearer ${authToken}`,
       "Content-Type": "application/json",
-      "Crossdeck-Sdk-Version": "@cross-deck/cli@1.1.1",
+      "Crossdeck-Sdk-Version": "@cross-deck/cli@1.1.2",
     },
     body: JSON.stringify(body),
   });

@@ -21,7 +21,7 @@ Source maps stay private — they're stored in private Cloud Storage and never s
 
 ## Authentication
 
-The CLI needs a Crossdeck **secret** key (`cd_sk_test_…` or `cd_sk_live_…`). Get one at [/dashboard/developers/api-keys/](https://cross-deck.com/dashboard/developers/api-keys/).
+The CLI needs a Crossdeck **secret** key (`cd_sk_test_…` or `cd_sk_live_…`). Get one at [/dashboard/developers/api/](https://cross-deck.com/dashboard/developers/api/).
 
 Pick one of:
 

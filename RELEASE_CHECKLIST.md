@@ -12,7 +12,7 @@ tested artefacts.
 - [ ] Backend routes the CLI hits (`POST /v1/releases/sourcemaps`)
       are deployed.
 - [ ] README examples match the current command surface exactly.
-- [ ] Public source repo exists at `VistaApps-za/crossdeck-cli`.
+- [ ] Public source repo exists at `Crossdeckhq/crossdeck-cli`.
 - [ ] `package.json → repository.url` points at the public repo
       before publishing.
 - [ ] `./sync-to-public-repo.sh "<release commit message>"` has

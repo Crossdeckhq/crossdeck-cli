@@ -1,12 +1,12 @@
 {
   "name": "@cross-deck/cli",
-  "version": "1.1.1",
+  "version": "1.1.2",
   "description": "Crossdeck CLI — upload source maps so production stack traces resolve back to original file:line:function.",
   "license": "MIT",
   "homepage": "https://cross-deck.com",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/VistaApps-za/crossdeck-cli.git"
+    "url": "git+https://github.com/Crossdeckhq/crossdeck-cli.git"
   },
   "type": "module",
   "main": "./dist/index.cjs",

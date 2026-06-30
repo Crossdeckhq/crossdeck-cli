@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Sync the @cross-deck/cli package from this monorepo to the public
-# repo at https://github.com/VistaApps-za/crossdeck-cli.
+# repo at https://github.com/Crossdeckhq/crossdeck-cli.
 #
 # We develop in the monorepo (alongside backend + dashboard + the
 # other SDKs) and mirror the CLI directory to its public home before
@@ -13,12 +13,12 @@
 #
 # Prereqs:
 #   - gh CLI authenticated against the VistaApps-za GitHub account
-#   - https://github.com/VistaApps-za/crossdeck-cli exists
+#   - https://github.com/Crossdeckhq/crossdeck-cli exists
 #   - This monorepo working tree is clean (changes committed)
 
 set -euo pipefail
 
-PUBLIC_REPO="VistaApps-za/crossdeck-cli"
+PUBLIC_REPO="Crossdeckhq/crossdeck-cli"
 LOCAL_CLONE="${TMPDIR:-/tmp}/crossdeck-cli-sync"
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 COMMIT_MSG="${1:-Sync from monorepo}"

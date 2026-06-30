@@ -1,0 +1,80 @@
+name: Release
+
+# THE publish door for @cross-deck/cli. Runs in the PUBLIC repo
+# (crossdeck-cli) on a version-tag push. npm TRUSTED PUBLISHING (OIDC) —
+# no token, no one-time-pin, never local.
+#
+# npmjs.com → @cross-deck/cli → Trusted Publisher MUST name repository
+# "Crossdeckhq/crossdeck-cli" AND workflow "release.yml" exactly.
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+
+permissions:
+  contents: write
+  id-token: write
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    env:
+      CROSSDECK_RELEASE: "1"
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          registry-url: "https://registry.npmjs.org"
+
+      - name: Upgrade npm for trusted publishing
+        run: npm install -g npm@latest
+
+      - name: Resolve version from tag
+        run: echo "VERSION=${GITHUB_REF_NAME#v}" >> "$GITHUB_ENV"
+
+      - name: Version gate — package.json must match the tag
+        run: |
+          PKG="$(node -p "require('./package.json').version")"
+          if [ "$PKG" != "$VERSION" ]; then
+            echo "::error::package.json version $PKG does not match tag v$VERSION"
+            exit 1
+          fi
+
+      - name: Changelog gate — CHANGELOG.md must have an entry for this version
+        run: |
+          if ! grep -qE "^## \[${VERSION}\]" CHANGELOG.md; then
+            echo "::error::No CHANGELOG.md entry '## [${VERSION}]' — refuse to publish an undocumented release."
+            exit 1
+          fi
+
+      - name: Install
+        run: npm ci
+
+      - name: Type check
+        run: npm run lint
+
+      - name: Test
+        run: npm test
+
+      - name: Build
+        run: npm run build
+
+      - name: Smoke binary
+        run: node dist/cli.cjs --version | grep -Fx "$VERSION"
+
+      - name: Publish to npm (trusted publishing)
+        run: npm publish --access public --provenance
+
+      - name: GitHub release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: "@cross-deck/cli ${{ github.ref_name }}"
+          generate_release_notes: true
