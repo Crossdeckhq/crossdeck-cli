@@ -4,6 +4,46 @@ All notable changes to `@cross-deck/cli` will be documented here. The
 format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/)
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.0] — 2026-08-03
+
+### Added
+
+- **`crossdeck login` — browser OAuth sign-in (CD-162).** The keystone of the
+  CLI's account/provisioning family. RFC 8252 native-app loopback + PKCE-S256,
+  the same flow `gh auth login` and `stripe login` use: the CLI starts a
+  `127.0.0.1` listener, opens the hosted Crossdeck consent page, catches the
+  redirect, and exchanges the code for a `cd_wk_` workspace token. By default it
+  requests full reads + provisioning scopes (`projects:write apps:write
+  keys:write`) — the consent screen shows the developer exactly that — so the
+  session can create projects/apps and mint keys as well as read. `--read-only`
+  requests reads alone; `--no-browser` prints the URL for headless machines.
+- **`crossdeck whoami`** — proves the session is live (refreshes + pings the
+  workspace) and prints the API, granted scopes, and portfolio size.
+- **`crossdeck logout`** — wipes the local credential (server-side revoke via
+  Settings → Developer).
+- **`crossdeck init` — zero to installed (CD-159).** One command creates a
+  project, creates an app, mints its publishable keys, sets the project active,
+  and prints the SDK snippet (`--env-file` writes a `.env`). The headless
+  equivalent of clicking through dashboard onboarding.
+- **`crossdeck projects create|list`, `crossdeck apps create|list`, `crossdeck
+  use`** — headless provisioning over the CD-170 engine (`POST /v1/projects`,
+  `POST /v1/apps`, `GET /v1/workspace/*`). `use` sets an active project so
+  monitoring commands don't need `--project`.
+- **`crossdeck revenue|analytics|errors`** — call the read REST APIs from the
+  terminal on the same session. `errors --issue <fp>` renders the moat stitch
+  (occurrences → affected users → how many pay). All take `--json`.
+- **`crossdeck sourcemaps upload`** — the canonical namespaced form of
+  `upload-sourcemaps` (kept as a permanent alias). Same key-based CI flow.
+- **Credential custody.** The long-lived refresh token is stored `chmod 600` at
+  `~/.crossdeck/credentials.json` behind a `CredentialStore` interface (OS
+  keychain backend drops in next); the 1h access token is memory-only, never
+  written to disk, never in argv or logs. Loose file perms are refused with the
+  exact `chmod` fix. Refresh tokens rotate on every use.
+
+This family is distinct from the CI / source-map family (`upload-sourcemaps`,
+key-based via `cd_sk_`) — one binary, two clearly-separated jobs, so a developer
+uploading source maps in CI never touches OAuth.
+
 ## [1.1.2] — 2026-06-30
 
 ### Docs
