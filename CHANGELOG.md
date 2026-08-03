@@ -4,6 +4,24 @@ All notable changes to `@cross-deck/cli` will be documented here. The
 format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/)
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.1] — 2026-08-03
+
+### Fixed
+
+- **`crossdeck init` printed a broken web snippet.** It imported `crossdeck`
+  (lowercase) — not an export — so a copy-paste would fail. Now prints the correct
+  singleton `import { Crossdeck } from "@cross-deck/web"` and includes the
+  `await Crossdeck.identify(currentUser.id)` line, so the snippet wires identity,
+  not just init.
+
+### Changed
+
+- **`crossdeck help` names the two modes.** The header now shows both ways to drive
+  the CLI — the interactive session (`crossdeck`) and one-shot commands
+  (`crossdeck <command>`, for scripts & CI).
+- **README rewritten** to lead with the session, with a pointer to the docs'
+  "Zero to a running account" walkthrough.
+
 ## [1.4.0] — 2026-08-03
 
 ### Added

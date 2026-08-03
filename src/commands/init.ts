@@ -24,12 +24,14 @@ interface InitOpts {
 }
 
 const SNIPPET: Record<string, (key: string) => string> = {
+  // The exported singleton is `Crossdeck` (capital). After init, wire identify()
+  // to YOUR auth state so events + revenue join to the real person by identity.
   web: (key) =>
-    `import { crossdeck } from "@cross-deck/web";\ncrossdeck.init({ publishableKey: "${key}" });`,
+    `import { Crossdeck } from "@cross-deck/web";\nCrossdeck.init({ publishableKey: "${key}" });\n// after your user signs in:\nawait Crossdeck.identify(currentUser.id);`,
   ios: (key) =>
-    `import Crossdeck\nCrossdeck.start(publishableKey: "${key}")`,
+    `import Crossdeck\nCrossdeck.start(publishableKey: "${key}")\n// after your user signs in:\nCrossdeck.identify(currentUser.id)`,
   android: (key) =>
-    `Crossdeck.start(context, publishableKey = "${key}")`,
+    `Crossdeck.start(context, publishableKey = "${key}")\n// after your user signs in:\nCrossdeck.identify(currentUser.id)`,
 };
 
 export async function initCommand(opts: InitOpts): Promise<number> {

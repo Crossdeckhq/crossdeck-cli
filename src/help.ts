@@ -90,8 +90,11 @@ export function renderHelp(): void {
   out.push(`  ${bold(tc(WORD, "crossdeck"))} ${coral("CLI")}  ${desc(`· v${CLI_VERSION}`)}`);
   out.push(`  ${desc("Sign in, provision projects & apps, and read the facts — from your terminal.")}`);
   out.push("");
+  out.push(`  ${desc("Two ways to drive it — same engine:")}`);
+  out.push(`    crossdeck               ${desc("# open the session (interactive) — type bare commands, no prefix")}`);
+  out.push(`    crossdeck ${coral("<command>")}     ${desc("# one-shot — for scripts & CI")}`);
+  out.push("");
   out.push(`  ${desc("Usage:")}  crossdeck ${coral("<command>")} ${desc("[options]")}`);
-  out.push(`          crossdeck              ${desc("# the launcher")}`);
   out.push(`          crossdeck help ${coral("<command>")}  ${desc("# flags for one command")}`);
 
   for (const g of GROUPS) {

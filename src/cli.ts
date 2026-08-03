@@ -29,7 +29,7 @@ import { renderLauncher, setLauncherVersion } from "./launcher.js";
 import { renderHelp, setHelpVersion } from "./help.js";
 import { startRepl } from "./repl.js";
 
-const VERSION = "1.4.0";
+const VERSION = "1.4.1";
 setLauncherVersion(VERSION);
 setHelpVersion(VERSION);
 

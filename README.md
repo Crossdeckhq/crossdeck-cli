@@ -5,13 +5,29 @@ revenue, errors, and analytics — without leaving the terminal.
 
 ```bash
 npm i -g @cross-deck/cli
-crossdeck login          # sign in through your browser
-crossdeck init --name "My App" --platform web
+crossdeck                # opens the session — a working environment
 ```
 
-That's a real project, a real publishable key, and a copy-paste SDK snippet in
-under a minute — the same result as clicking through onboarding in the dashboard,
-headless.
+`crossdeck` on an interactive terminal opens a **session** (like `claude`). Inside
+it you type bare commands with no prefix, and your active project persists across
+the whole session and shows in the prompt:
+
+```
+prolend ❯ login          # sign in through your browser
+prolend ❯ init --name "My App" --platform web
+prolend ❯ revenue
+prolend ❯ exit
+```
+
+**Two ways to drive it — same engine.** Prefer one-shot commands? Everything is
+*also* a plain command, no session: `crossdeck login`, `crossdeck init …`,
+`crossdeck revenue`. Use the session by hand; use one-shot in scripts and CI.
+Crossdeck opens a session **only** on an interactive terminal — a pipe or CI
+runner runs the command and exits, never trapped in a REPL.
+
+> **New to Crossdeck?** The docs have a word-for-word walkthrough from a blank
+> machine to a live project with identity wired and a payment rail connected:
+> **[cross-deck.com/docs/cli → Zero to a running account](https://cross-deck.com/docs/cli#arc)**.
 
 ---
 
@@ -51,7 +67,10 @@ read-only session? `crossdeck login --read-only`. Headless box with no browser?
 Your credentials are stored owner-only (`chmod 600`) at
 `~/.crossdeck/credentials.json`. The long-lived refresh token never leaves that
 file; the 1-hour access token lives in memory only and is never written to disk,
-argv, or logs. Revoke anytime from **Settings → Developer** or `crossdeck logout`.
+argv, or logs. **`crossdeck logout` revokes this machine's session server-side**
+(RFC 7009) and then wipes the local file — a stolen `credentials.json` is dead the
+moment you log out. Manage and revoke every connected machine from the dashboard's
+**Settings → Developer → Connected apps**.
 
 ### Zero to installed
 
@@ -72,8 +91,10 @@ Your publishable keys
   test  cd_pub_test_…
 
 Install — web
-  import { crossdeck } from "@cross-deck/web";
-  crossdeck.init({ publishableKey: "cd_pub_live_…" });
+  import { Crossdeck } from "@cross-deck/web";
+  Crossdeck.init({ publishableKey: "cd_pub_live_…" });
+  // after your user signs in:
+  await Crossdeck.identify(currentUser.id);
 ```
 
 Add `--env-file` to drop the keys into a `.env`. For native apps, pass
