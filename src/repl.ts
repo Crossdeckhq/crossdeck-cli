@@ -42,7 +42,9 @@ function promptText(): string {
 /** Resolve the path to this binary so we can re-spawn it one-shot per command. */
 function entryPath(): string {
   // argv[1] is the resolved bin script (dist/cli.cjs) when run as `crossdeck`.
-  return process.argv[1];
+  // Always defined when the CLI is executing (it's only undefined in a bare
+  // `node` REPL, which this code never runs in) — fall back defensively anyway.
+  return process.argv[1] ?? "";
 }
 
 function runOnce(args: string[]): Promise<void> {
