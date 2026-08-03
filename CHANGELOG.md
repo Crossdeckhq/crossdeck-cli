@@ -4,6 +4,34 @@ All notable changes to `@cross-deck/cli` will be documented here. The
 format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/)
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.3.0] — 2026-08-03
+
+### Added
+
+- **The launcher (CD-159).** `crossdeck` with no subcommand now prints the
+  Stripe-premium splash — the brand's first impression in the terminal. Two
+  states: signed-out leads with a single `login` path; signed-in reveals the two
+  hats (stand up the engine → read the facts) with your identity and active
+  project. Brand gradient X (`#FF3D2E → #FF9A3D` at 135°) in truecolor, degrading
+  to coral on 16-colour terminals and plain block-art under `NO_COLOR`. No network
+  call — identity + active project come from the local credential, so it's instant
+  and works offline.
+- **`crossdeck help` — the premium command tree.** Grouped by the two hats
+  (Account · Stand up the engine · Read the facts · Source maps/CI) in the same
+  restraint and palette as the launcher. `crossdeck help <command>` drills into a
+  single command's flags.
+
+### Changed
+
+- **`crossdeck logout` now revokes server-side (RFC 7009).** It calls the new
+  `POST /oauth/revoke`, which kills the whole refresh-token family AND the
+  `cd_wk_` access tokens it minted, THEN wipes the local credential. A stolen
+  `credentials.json` is dead the moment you log out — no longer a local-only wipe.
+  The consent screen's "revoke anytime from Settings → Developer" is now a real,
+  populated switch (dashboard **Connected apps** surface), not a dead reference.
+- **`crossdeck login` / `whoami` greet you by identity.** Login caches the account
+  email (best-effort, never blocks sign-in); the launcher and `whoami` show it.
+
 ## [1.2.0] — 2026-08-03
 
 ### Added

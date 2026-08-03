@@ -31,6 +31,8 @@ export interface StoredCredentials {
   baseUrl: string;
   /** ISO timestamp of login, for `whoami`. Non-secret. */
   loggedInAt: string;
+  /** Account email, cached at login so the launcher greets by identity offline. Non-secret. */
+  email?: string;
 }
 
 export interface CredentialStore {

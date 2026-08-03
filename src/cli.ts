@@ -25,8 +25,12 @@ import { projectsCreateCommand, projectsListCommand } from "./commands/projects.
 import { appsCreateCommand, appsListCommand } from "./commands/apps.js";
 import { useCommand } from "./commands/use.js";
 import { revenueCommand, analyticsCommand, errorsCommand } from "./commands/monitor.js";
+import { renderLauncher, setLauncherVersion } from "./launcher.js";
+import { renderHelp, setHelpVersion } from "./help.js";
 
-const VERSION = "1.2.0";
+const VERSION = "1.3.0";
+setLauncherVersion(VERSION);
+setHelpVersion(VERSION);
 
 const program = new Command();
 
@@ -35,7 +39,9 @@ program
   .description(
     "Crossdeck CLI — sign in, provision projects & apps, and monitor errors, analytics, and revenue from your terminal.",
   )
-  .version(VERSION);
+  .version(VERSION)
+  // We render our own premium `help` (see below) instead of commander's default.
+  .helpCommand(false);
 
 // ── Account (OAuth) ──────────────────────────────────────────────────────────
 // The provisioning / monitoring family. Interactive `crossdeck login` (RFC 8252
@@ -245,6 +251,34 @@ program
     const exitCode = await doctorCommand(opts);
     process.exit(exitCode);
   });
+
+// ── The launcher (`crossdeck` with no subcommand) ────────────────────────────
+// The brand's first impression: State 1 (logged out) or State 2 (logged in).
+// Rendered BEFORE commander parses so a bare `crossdeck` is the splash, not a
+// help dump. `--help`/`-h` and `help` still route through commander below.
+program
+  .command("help")
+  .argument("[command]", "Show flags for one command instead of the whole tree.")
+  .description("Show the command tree, or one command's flags.")
+  .action((command?: string) => {
+    if (!command) {
+      renderHelp();
+      process.exit(0);
+    }
+    const target = program.commands.find((cmd) => cmd.name() === command);
+    if (target) {
+      target.outputHelp();
+      process.exit(0);
+    }
+    process.stderr.write(`Unknown command: ${command}\n`);
+    renderHelp();
+    process.exit(1);
+  });
+
+if (process.argv.length <= 2) {
+  renderLauncher();
+  process.exit(0);
+}
 
 program.parseAsync(process.argv).catch((err) => {
   // Commander already prints its own error; this catches anything our

@@ -56,6 +56,7 @@ export async function getAccessToken(overrideBaseUrl?: string): Promise<Session>
     scope: tokens.scope || creds.scope,
     baseUrl,
     loggedInAt: creds.loggedInAt,
+    email: creds.email, // preserve the cached identity across refresh rotations
   });
 
   return { accessToken: tokens.accessToken, baseUrl, scope: tokens.scope || creds.scope };

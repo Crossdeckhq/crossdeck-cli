@@ -74,6 +74,21 @@ export async function loginCommand(opts: LoginOpts): Promise<number> {
       redirectUri: loopback.redirectUri,
     });
 
+    // Best-effort: greet by identity next time. Cache the account email using the
+    // access token we already hold — one call, never blocks or fails the login.
+    let email: string | undefined;
+    try {
+      const res = await fetch(`${baseUrl}/v1/workspace/projects`, {
+        headers: { Authorization: `Bearer ${tokens.accessToken}`, Accept: "application/json" },
+      });
+      if (res.ok) {
+        const body = (await res.json()) as { data?: { account?: { email?: string } } };
+        email = body.data?.account?.email ?? undefined;
+      }
+    } catch {
+      /* email is a nicety for the launcher — never gate sign-in on it */
+    }
+
     const store = credentialStore();
     store.save({
       refreshToken: tokens.refreshToken,
@@ -81,9 +96,10 @@ export async function loginCommand(opts: LoginOpts): Promise<number> {
       scope: tokens.scope || scope,
       baseUrl,
       loggedInAt: new Date().toISOString(),
+      email,
     });
 
-    process.stdout.write(`\n✓ Signed in. Access renews automatically for ~30 days.\n`);
+    process.stdout.write(`\n✓ Signed in${email ? ` as ${email}` : ""}. Access renews automatically for ~30 days.\n`);
     process.stdout.write(`  Scopes: ${tokens.scope || scope}\n`);
     process.stdout.write(`  Credentials: ${store.location()} (owner-only, 0600)\n`);
     process.stdout.write(`  Revoke anytime from Settings → Developer, or run \`crossdeck logout\`.\n\n`);

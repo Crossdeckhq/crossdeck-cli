@@ -15,21 +15,24 @@ export async function whoamiCommand(opts: WhoamiOpts): Promise<number> {
   try {
     const session = await getAccessToken(opts.baseUrl);
 
-    // Prove the token authenticates against the live gate (and get portfolio size).
+    // Prove the token authenticates against the live gate (and get portfolio size + email).
     let projectCount: number | null = null;
+    let email: string | null = null;
     try {
       const res = await fetch(`${session.baseUrl}/v1/workspace/projects`, {
         headers: { Authorization: `Bearer ${session.accessToken}`, Accept: "application/json" },
       });
       if (res.ok) {
-        const body = (await res.json()) as { data?: { projects?: unknown[] } };
+        const body = (await res.json()) as { data?: { projects?: unknown[]; account?: { email?: string } } };
         projectCount = Array.isArray(body.data?.projects) ? body.data!.projects!.length : null;
+        email = body.data?.account?.email ?? null;
       }
     } catch {
       /* network hiccup — the refresh already proved the session is valid */
     }
 
     process.stdout.write(`\n✓ Signed in to Crossdeck\n`);
+    if (email) process.stdout.write(`  Account: ${email}\n`);
     process.stdout.write(`  API:     ${session.baseUrl}\n`);
     process.stdout.write(`  Scopes:  ${session.scope || "(unknown)"}\n`);
     if (projectCount !== null) process.stdout.write(`  Projects: ${projectCount}\n`);
