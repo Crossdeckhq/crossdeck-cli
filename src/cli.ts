@@ -27,8 +27,9 @@ import { useCommand } from "./commands/use.js";
 import { revenueCommand, analyticsCommand, errorsCommand } from "./commands/monitor.js";
 import { renderLauncher, setLauncherVersion } from "./launcher.js";
 import { renderHelp, setHelpVersion } from "./help.js";
+import { startRepl } from "./repl.js";
 
-const VERSION = "1.3.0";
+const VERSION = "1.4.0";
 setLauncherVersion(VERSION);
 setHelpVersion(VERSION);
 
@@ -276,14 +277,22 @@ program
   });
 
 if (process.argv.length <= 2) {
-  renderLauncher();
-  process.exit(0);
+  // On an interactive terminal, `crossdeck` opens the session (like `claude`):
+  // type bare commands inside it, no prefix, active project persists. Piped or
+  // non-interactive (CI, `crossdeck | cat`), print the splash once and exit —
+  // never trap a pipeline in a REPL.
+  if (process.stdin.isTTY && process.stdout.isTTY) {
+    startRepl();
+  } else {
+    renderLauncher();
+    process.exit(0);
+  }
+} else {
+  program.parseAsync(process.argv).catch((err) => {
+    // Commander already prints its own error; this catches anything our
+    // own code throws past the action handler.
+    // eslint-disable-next-line no-console
+    console.error(err instanceof Error ? err.message : String(err));
+    process.exit(1);
+  });
 }
-
-program.parseAsync(process.argv).catch((err) => {
-  // Commander already prints its own error; this catches anything our
-  // own code throws past the action handler.
-  // eslint-disable-next-line no-console
-  console.error(err instanceof Error ? err.message : String(err));
-  process.exit(1);
-});

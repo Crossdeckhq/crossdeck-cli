@@ -92,10 +92,12 @@ function version(): string {
 }
 
 /**
- * Print the splash. `promptCwd` mimics the shell prompt path (defaults to the
- * basename of cwd). One subtle rise-in on launch; nothing busier.
+ * Print the splash. In `repl` mode it's the header of the interactive session,
+ * so the footer invites you to type a command here rather than pointing at
+ * `crossdeck <cmd>`. One subtle rise-in on launch; nothing busier.
  */
-export function renderLauncher(): void {
+export function renderLauncher(opts: { repl?: boolean } = {}): void {
+  const repl = opts.repl === true;
   const creds = safeLoad();
   const out: string[] = [];
 
@@ -117,7 +119,11 @@ export function renderLauncher(): void {
     out.push(`  ${desc("Docs")}        ${tc(WORD, "cross-deck.com/docs")}`);
     out.push(`  ${desc("Dashboard")}   ${tc(WORD, "app.cross-deck.com")}`);
     out.push("");
-    out.push(`  ${desc("New here? Run 'crossdeck login' to connect this machine.")}`);
+    out.push(
+      repl
+        ? `  ${desc("Type 'login' to connect this machine — or 'help', 'exit'.")}`
+        : `  ${desc("New here? Run 'crossdeck login' to connect this machine.")}`,
+    );
   } else {
     // ── State 2 — logged in ─────────────────────────────────────────────────
     const who = creds.email ? `Signed in as ${creds.email}` : "Signed in";
@@ -140,7 +146,11 @@ export function renderLauncher(): void {
     out.push(cmd("crossdeck errors", "An issue, stitched to who it hit", 24));
     out.push("");
     out.push(`  ${desc("Docs")}        ${tc(WORD, "cross-deck.com/docs")}`);
-    out.push(`  ${desc("Run 'crossdeck help' for the full command tree.")}`);
+    out.push(
+      repl
+        ? `  ${desc("Type a command below — 'help' for the full tree, 'exit' to leave.")}`
+        : `  ${desc("Run 'crossdeck help' for the full command tree.")}`,
+    );
   }
   out.push("");
 

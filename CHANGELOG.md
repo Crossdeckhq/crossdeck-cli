@@ -4,6 +4,23 @@ All notable changes to `@cross-deck/cli` will be documented here. The
 format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/)
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.0] — 2026-08-03
+
+### Added
+
+- **The interactive session (CD-159).** `crossdeck` on an interactive terminal now
+  opens a working environment — like `claude` — instead of a one-shot. Inside it
+  you type bare commands with no `crossdeck` prefix (`whoami`, `init`, `revenue`,
+  `use prolend`, `help`, `exit`), and your active project persists across the
+  session and shows in the prompt (`prolend ❯`). The splash is the session's
+  header. Built-ins: `help`, `clear`, `exit`/`quit` (and Ctrl-D); Ctrl-C cancels
+  the current line without leaving the session; a stray `crossdeck` prefix is
+  tolerated.
+- **Additive, never a replacement.** Every command is still a one-shot
+  (`crossdeck revenue`, `crossdeck sourcemaps upload …`), so scripts and CI compose
+  unchanged. The session opens only on an interactive TTY — a pipe or CI runner
+  runs the command and exits, never trapped in a REPL.
+
 ## [1.3.0] — 2026-08-03
 
 ### Added

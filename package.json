@@ -1,6 +1,6 @@
 {
   "name": "@cross-deck/cli",
-  "version": "1.3.0",
+  "version": "1.4.0",
   "description": "Crossdeck CLI — upload source maps so production stack traces resolve back to original file:line:function.",
   "license": "MIT",
   "homepage": "https://cross-deck.com",
