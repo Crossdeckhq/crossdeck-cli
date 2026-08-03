@@ -9,36 +9,67 @@
 
 import { api } from "../oauth/api.js";
 import { resolveProject } from "../context.js";
-import { c, coverageNote, heading, json, kv, line } from "../render.js";
+import { c, coverageNote, heading, json, kv, line, money } from "../render.js";
 import { runAuthed } from "./_authed.js";
 
-const humanize = (k: string): string => k.replace(/([a-z])([A-Z])/g, "$1 $2").replace(/^./, (s) => s.toUpperCase());
-
-/** Render the scalar top-level fields of a data object; hint nested → --json. */
-function renderScalars(data: Record<string, unknown>): void {
-  const rows: Array<[string, string]> = [];
-  for (const [k, v] of Object.entries(data)) {
-    if (k === "coverage") continue;
-    if (v === null || ["string", "number", "boolean"].includes(typeof v)) {
-      rows.push([humanize(k), v === null ? c.dim("—") : String(v)]);
-    }
-  }
-  if (rows.length) kv(rows);
-  if (data.coverage) coverageNote(data.coverage);
-}
-
 interface MonitorOpts { project?: string; json?: boolean; baseUrl?: string }
+
+interface RevenueData {
+  currency?: string;
+  coverage?: unknown;
+  current?: {
+    mrrCents?: number | null;
+    payingCustomers?: number | null;
+    byRail?: Record<string, number> | null;
+    recognisedCashThisMonthCents?: number | null;
+    recognisedCashThisMonthByShape?: { recurring?: number; oneOff?: number } | null;
+  };
+}
 
 export async function revenueCommand(opts: MonitorOpts): Promise<number> {
   return runAuthed(async () => {
     const project = resolveProject(opts.project);
-    const { data } = await api<Record<string, unknown>>("GET", "/v1/revenue", { query: { project } }, opts.baseUrl);
+    const { data } = await api<RevenueData>("GET", "/v1/revenue", { query: { project } }, opts.baseUrl);
     if (opts.json) { json(data); return 0; }
+
     heading(`Revenue · ${project}`);
-    renderScalars(data ?? {});
+    const cur = data?.current ?? {};
+    const ccy = (data?.currency ?? "usd").toUpperCase();
+    // A blank is a blind spot (metric not wired), NOT $0 — say so, don't print 0.
+    const cash = (cents: number | null | undefined, blind: string): string =>
+      cents == null ? c.dim(blind) : money(cents, ccy);
+
+    const rows: Array<[string, string]> = [
+      ["MRR (recurring)", cash(cur.mrrCents, "— no subscription rail connected")],
+      ["Cash this month", cash(cur.recognisedCashThisMonthCents, "— no revenue rail connected")],
+    ];
+    const shape = cur.recognisedCashThisMonthByShape;
+    if (shape && (typeof shape.recurring === "number" || typeof shape.oneOff === "number")) {
+      rows.push(["  ↳ recurring / one-off", `${money(shape.recurring ?? 0, ccy)}  /  ${money(shape.oneOff ?? 0, ccy)}`]);
+    }
+    rows.push(["Paying customers", cur.payingCustomers == null ? c.dim("—") : c.bold(String(cur.payingCustomers))]);
+    kv(rows);
+
+    // Per-rail split, one line, only rails with a value.
+    if (cur.byRail) {
+      const rails = Object.entries(cur.byRail).filter(([, v]) => typeof v === "number");
+      if (rails.length) {
+        line(`  ${c.dim("by rail".padEnd(kvWidth(rows)))}  ` + rails.map(([k, v]) => `${k} ${money(v, ccy)}`).join(c.dim(" · ")));
+      }
+    }
+
+    // One concise, honest caveat — only when something is actually a blind spot.
+    if (cur.mrrCents == null || cur.recognisedCashThisMonthCents == null) {
+      line(`  ${c.yellow("○")} ${c.dim("A blank isn't $0 — it's a metric not wired yet. Connect a payment rail in the dashboard.")}`);
+    }
     line("");
     return 0;
   });
+}
+
+/** Label-column width so the by-rail line aligns under the kv() rows. */
+function kvWidth(rows: Array<[string, string]>): number {
+  return rows.reduce((m, [k]) => Math.max(m, k.length), 0);
 }
 
 export async function analyticsCommand(opts: MonitorOpts): Promise<number> {

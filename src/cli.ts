@@ -29,7 +29,7 @@ import { renderLauncher, setLauncherVersion } from "./launcher.js";
 import { renderHelp, setHelpVersion } from "./help.js";
 import { startRepl } from "./repl.js";
 
-const VERSION = "1.4.1";
+const VERSION = "1.4.2";
 setLauncherVersion(VERSION);
 setHelpVersion(VERSION);
 
@@ -167,7 +167,7 @@ program
 program
   .command("errors")
   .description("One error issue with the moat stitch — who it hit, how many pay (GET /v1/errors).")
-  .requiredOption("-i, --issue <fingerprint>", "The issue fingerprint (from the Errors tab).")
+  .option("-i, --issue <fingerprint>", "The issue fingerprint (from the Errors tab).")
   .option("-p, --project <id>", "Project id (defaults to the active project).")
   .option("--json", "Output the raw JSON envelope.", false)
   .option("--base-url <url>", "Crossdeck API base URL.")

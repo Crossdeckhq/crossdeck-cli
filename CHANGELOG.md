@@ -4,6 +4,20 @@ All notable changes to `@cross-deck/cli` will be documented here. The
 format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/)
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.2] — 2026-08-03
+
+### Fixed
+
+- **`crossdeck revenue` hid the actual money.** The figures live in a nested
+  `current` object, but the renderer only printed top-level scalars — so you saw
+  the currency and a wall of field-path semantics, never the dollars. Now it
+  renders clean, labelled amounts: **MRR (recurring)**, **Cash this month** (with
+  a recurring/one-off split), **Paying customers**, and a per-rail line. A blank
+  is shown as "not wired" with a one-line caveat — never a misleading `$0`.
+- **`crossdeck errors` with no `--issue` hard-errored** with a raw commander
+  message. `--issue` is no longer a hard-required option, so the command now shows
+  a helpful "pass `--issue <fingerprint>` from the Errors tab" hint instead.
+
 ## [1.4.1] — 2026-08-03
 
 ### Fixed
